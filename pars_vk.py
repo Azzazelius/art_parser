@@ -10,7 +10,6 @@ TOKEN_USER = "vk1.a.hMhNmNJtZvWAiq5s0pikGGkxxSzTUVa-9y5VESGeXJQeX4RZNiljAmoeDual
 VERSION = 5.131
 DOMAIN = 'club39043966'
 
-
 # Получаем список альбомов пользователя или группы
 
 method_url = "https://api.vk.com/method/photos.get"
@@ -23,7 +22,7 @@ method_params = {
 
 response = requests.get(method_url, params=method_params)
 album_dict = response.json()
-# print(result)
+print("album_dict", album_dict)
 
 
 
@@ -36,10 +35,6 @@ response = requests.get(url)
 image = Image.open(BytesIO(response.content))
 image.show()
 '''
-
-
-
-# responce_test = {'response': {'count': 26, 'items': [{'album_id': 157131299, 'date': 1337373443, 'id': 283188466, 'owner_id': -39043966, 'sizes': [{'height': 130, 'type': 'm', 'width': 97, 'url': 'https://sun9-62.userapi.com/impf/c303809/v303809470/a30/kXm4iXJbC_s.jpg?size=97x130&quality=96&sign=69146e34b8bb898e7dfc2d9a58edf4c7&c_uniq_tag=SQRSHlldxz67JOeO_sKDz5kBrnkMm-2uDlwLPO033OU&type=album'}, {'height': 174, 'type': 'o', 'width': 130, 'url': 'https://sun9-62.userapi.com/impf/c303809/v303809470/a30/kXm4iXJbC_s.jpg?size=130x174&quality=96&sign=915c1517af77c33b4e1fe8709fdc6803&c_uniq_tag=FxGlKQgWnekXwFGcJJUZhZQXDRtBWg17FWkaLoE-Stk&type=album'}, {'height': 267, 'type': 'p', 'width': 200, 'url': 'https://sun9-62.userapi.com/impf/c303809/v303809470/a30/kXm4iXJbC_s.jpg?size=200x267&quality=96&sign=44acd32fada32b1ddf1397ea15317018&c_uniq_tag=yGP0gMIrmhC532yZr981D2-PzzDUquttnxrsXO6GhJQ&type=album'}], 'text': '', 'user_id': 100, 'has_tags': False}]}}
 
 
 def extract_attribute(data, name):
@@ -69,12 +64,26 @@ def extract_attribute(data, name):
         # print("The end?")
         return None
 
-    print("run find_attribute")
+    # print("run find_attribute")
     result_of_recursion = find_attribute(data)
     return result_of_recursion
 
 attribute_name = 'sizes'
-# url_name = 'url'
 attribute_value = extract_attribute(album_dict, attribute_name)
-print(dict.keys(attribute_value))
+attribute_value = attribute_value[attribute_name]  # only list with ulr remains
 
+
+def photos_url(dict):
+    photo_list = []
+    for p in dict:
+        list_id = 0
+        photo = dict[list_id]["url"]
+        photo_list.append(photo)
+        print(photo)
+        list_id += 1
+
+    return photo_list
+
+# result_photo = photos_url(attribute_value)
+#
+# print(result_photo)
