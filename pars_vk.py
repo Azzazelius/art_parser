@@ -1,89 +1,68 @@
+import os
+import vk_api
+import requests  # method for downloading photos
+from PIL import Image, ImageStat  # method to show pictures
 from io import BytesIO
-import requests
-import urllib.request
-from PIL import Image, ImageStat
-from io import BytesIO
+from vk_api_token import access_token  # for security, my token is only accessible from local machine
 
 
-# Переменные
-TOKEN_USER = "vk1.a.hMhNmNJtZvWAiq5s0pikGGkxxSzTUVa-9y5VESGeXJQeX4RZNiljAmoeDualDaqIcGRRagoRzv5Ucj4a4ildMCl9E31ingrMqBN4wyQu58RO1nipThf-eWG7Xke2wFSAH5g1GA6Igq2Qfw3l3TRaC2oWwWssAWE2a4_Phzofyr_LaE0LLsczM0QZ1_LScHiI6xoqedOLdxqlawR8F2N_Hg"
-VERSION = 5.131
-DOMAIN = 'club39043966'
+vk_session = vk_api.VkApi(token=access_token)
+vk = vk_session.get_api()
 
-# Получаем список альбомов пользователя или группы
+group_id = -39043966  # "-" is used to indicate that this is a group id, but positive numbers are used for user id
+album_id = 157131299
+print(album_id)
+images_count = 0
+# Find a way to download particular photos based on my filer parameters.
 
-method_url = "https://api.vk.com/method/photos.get"
-method_params = {
-    'access_token': TOKEN_USER,
-    'v': VERSION,
-    "owner_id": "-39043966",
-    "album_id": "157131299"
-}
-
-response = requests.get(method_url, params=method_params)
-album_dict = response.json()
-print("album_dict", album_dict)
+save_images_to = "../../../Pictures/Photos/"
 
 
+"""
+here is forming urls for photos. "items" is a list consists of several dictionaries.
+VK saves photos in different sizes. Each size has its own url (key = "URL")
+the biggest photo always is the last in the list. 
+That's why to form a result list we take key "sizes", in that list take the last object [-1] and save "url" value
+"""
+def form_id_url_pair(input_list):
+    pair_list = []
+    for image in input_list:
+        im_id = image['id']
+        im_url = image['sizes'][-1]['url']
+        im_tuple = (im_id, im_url)
+        pair_list.append(im_tuple)
+    print(pair_list)
+    return pair_list
 
 
-# ================= показать картинку по ссылке =============
-
-'''
-url = 'https://sun9-62.userapi.com/impf/c303809/v303809470/a30/kXm4iXJbC_s.jpg?size=97x130&quality=96&sign=69146e34b8bb898e7dfc2d9a58edf4c7&c_uniq_tag=SQRSHlldxz67JOeO_sKDz5kBrnkMm-2uDlwLPO033OU&type=album'  # Замените на ваш URL изображения
-response = requests.get(url)
-image = Image.open(BytesIO(response.content))
-image.show()
-'''
-
-
-def extract_attribute(data, name):
-    """
-    Функция для извлечения словаря с ключём "name" из
-    "dictionary", который является многоуровневым словарём.
-    """
-    def find_attribute(dictionary):
-        # print('Recursion start')
-        if isinstance(dictionary, dict):
-            if name in dictionary:
-                # print('__AT LAST, desired has been found!__')
-                return {name: dictionary[name]}
-            else:
-                # print('desired NOT found')
-                for value in dictionary.values():
-                    mid_result = find_attribute(value)
-                    # print('size not found')
-                    if mid_result is not None:
-                        return mid_result
-        elif isinstance(dictionary, list):
-            # print("we're not in a dictionary anymore. This is the LIST!")
-            for item in dictionary:
-                result = find_attribute(item)
-                if result is not None:
-                    return result
-        # print("The end?")
-        return None
-
-    # print("run find_attribute")
-    result_of_recursion = find_attribute(data)
-    return result_of_recursion
-
-attribute_name = 'sizes'
-attribute_value = extract_attribute(album_dict, attribute_name)
-attribute_value = attribute_value[attribute_name]  # only list with ulr remains
+def download_images(input_pairs):
+    os.makedirs(save_images_to, exist_ok=True)
+    for pair in input_pairs:
+        result = requests.get(pair[1])
+        with open(f'{save_images_to}/vk_{pair[0]}.jpg', 'wb') as file:
+            file.write(result.content)
+            print('Image saved.')
 
 
-def photos_url(dict):
-    photo_list = []
-    for p in dict:
-        list_id = 0
-        photo = dict[list_id]["url"]
-        photo_list.append(photo)
-        print(photo)
-        list_id += 1
+def show_image(image_pairs):  # for test purpose only
+    result = requests.get(image_pairs[0][1])
+    image = Image.open(BytesIO(result.content))
+    image.show()
 
-    return photo_list
 
-# result_photo = photos_url(attribute_value)
-#
-# print(result_photo)
+# if we need to get all images from the album we use first code. else - define desired quantity
+if images_count == 0:
+    response = vk.photos.get(owner_id=group_id, album_id=album_id)
+else:
+    response = vk.photos.get(owner_id=group_id, album_id=album_id, count=images_count)
+images_list = response['items']  # "items" is a key from the 'response' dictionary with a necessary data.
+
+image_pairs = form_id_url_pair(images_list)
+download_images(image_pairs)
+# show_image(image_pairs)  # for testing
+
+
+
+
+
+
