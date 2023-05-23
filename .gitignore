@@ -1,2 +1,3 @@
 /venv/
-/token_value.py
+/vk_api_token.py
+/parser_main/parser_main/security_values.py
