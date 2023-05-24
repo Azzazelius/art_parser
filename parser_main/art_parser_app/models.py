@@ -11,8 +11,8 @@ class VkGroups(models.Model):
 
 
 class VkImages(models.Model):
-    album_id = models.IntegerField()
-    image_id = models.IntegerField()
+    album_id = models.IntegerField
+    image_id = models.IntegerField
     group_id = models.ForeignKey(VkGroups, on_delete=models.CASCADE, null=True, blank=True)
     publish_date = models.DateTimeField(null=True, blank=True)
     url = models.TextField()
@@ -23,8 +23,8 @@ class VkImages(models.Model):
         self.url = quote(self.url)
         super().save(*args, **kwargs)
 
-    class Meta:
-        unique_together = ('album_id', 'image_id')
+    # class Meta: # couldn't find a way to use composite primary key =(
+    #     unique_together = ('album_id', 'image_id')  # use this pair as a primary key
 
     def __str__(self):
         return f"Image {self.image_id} in Album {self.album_id}"
