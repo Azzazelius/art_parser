@@ -3,7 +3,7 @@ from urllib.parse import quote
 
 
 class VkGroups(models.Model):
-    group_id = models.IntegerField(primary_key=True)
+    group_id = models.IntegerField(primary_key=True, db_column='group_id')
     group_name = models.CharField(max_length=255)
 
     def __str__(self):
@@ -11,10 +11,11 @@ class VkGroups(models.Model):
 
 
 class VkImages(models.Model):
-    album_id = models.IntegerField
-    image_id = models.IntegerField
-    group_id = models.ForeignKey(VkGroups, on_delete=models.CASCADE, null=True, blank=True)
+    album_id = models.IntegerField()
+    image_id = models.IntegerField()
+    group_id = models.ForeignKey(VkGroups, on_delete=models.CASCADE, null=True, blank=True, db_column='group_id')
     publish_date = models.DateTimeField(null=True, blank=True)
+    thumbnail = models.TextField()
     url = models.TextField()
 
 # This function is used to escape 'url' values. It will work automatically, so I don't need to call it manually.

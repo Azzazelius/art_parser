@@ -10,81 +10,79 @@ vk_session = vk_api.VkApi(token=access_token)
 vk = vk_session.get_api()
 
 
-"""
-here is forming urls for photos. "items" is a list consists of several dictionaries.
-As VK saves photos in different sizes, each photo size has its own url (key = "URL")
-the biggest photo always is the last in the list. 
-That's why to form a result list we take key "sizes", in that list take the last object [-1] and save "url" value
-"""
-
 
 class VkImageGrabber:
 
     def __init__(self, group_id=-39043966, album_id=157131299, images_count=0):
+        # if group id starts with positive number, this is a user. If with negative - it is a group
         self.group_id = group_id
         self.album_id = album_id
         self.images_count = images_count
 
     def grabbing_parameters(self):
+        response = vk.photos.get(owner_id=self.group_id, album_id=self.album_id, count=self.images_count)
+        # print('Response: ', response)
+        return response
 
-        # if we need to get all images from the album we use first code. else - define desired quantity
-        if self.images_count == 0:
-            response = vk.photos.get(owner_id=self.group_id, album_id=self.album_id)
-        else:
-            response = vk.photos.get(owner_id=self.group_id, album_id=self.album_id, count=self.images_count)
-        # print(response)
-        requested_images_list = response['items']  # "items" is a key from the 'response' dictionary with a necessary data.
-        return requested_images_list
+    def get_images_data(self):
+        images_list = self.grabbing_parameters()['items']
+        result = []
+        # print('result', result, '\n')
+        for image in images_list:
+            result.append(
+                    [
+                        image['id'],  # picture id
+                        image['owner_id'],  # user/ group id
+                        image['album_id'],
+                        image['date'],  # дата в виде UNIX-времени (POSIX-времени)
+                        image['sizes'][-1]['url'],  # url to the biggest size is the last one in the dictionary
+                        image['sizes'][5]['url'],  # url for thumbnail. In [5] the smallest size
+                    ]
+                )
+        # print('Images_data: ', result)
+        # print('Images data count : ', len(result))
+        return result
 
-    def form_id_url_pair(self):
-        requested_images_list = self.grabbing_parameters()
-        image_pairs_list = []
-        for image in requested_images_list:
-            im_id = image['id']
-            im_url = image['sizes'][-1]['url']
-            im_tuple = (im_id, im_url)
-            image_pairs_list.append(im_tuple)
-        print(image_pairs_list)
-        return image_pairs_list
-
-    # for thumbnails which will be added to the db
-    def form_thumbnails_list(self):
-        requested_images_list = self.grabbing_parameters()
-        thumbnails_list = []
-        for image in requested_images_list:
-            im_id = image['id']
-            im_url = image['sizes'][5]['url']  # [5] is the smallest size
-            im_tuple = (im_id, im_url)
-            thumbnails_list.append(im_tuple)
-        print(thumbnails_list)
-        return thumbnails_list
-
-    def download_images(self):
-        image_pairs = self.form_id_url_pair()
-        # path to save images
-        save_images_to = "../../../Pictures/Photos/"
-        os.makedirs(save_images_to, exist_ok=True)
-        for pair in image_pairs:
-            result = requests.get(pair[1])
-            with open(f'{save_images_to}/vk_{pair[0]}.jpg', 'wb') as file:
-                file.write(result.content)
-                print('Image saved.')
-
-    def show_image(self):  # for test purpose only
-        image_pairs = self.form_id_url_pair()
-        result = requests.get(image_pairs[0][1])
+    # =========================== methods for testing
+    def show_image(self):
+        images_data = self.get_images_data()
+        image_to_show = 0
+        print(images_data)
+        result = requests.get(images_data[image_to_show][4])
+        print(result)
         image = Image.open(BytesIO(result.content))
         image.show()
 
+    def download_images(self):
+        images_data = self.get_images_data()
+        # path to save images
+        save_images_to = "../../../Pictures/Photos/"
+        os.makedirs(save_images_to, exist_ok=True)
+        for ind in images_data:
+            result = requests.get(ind[4])
+            with open(f'{save_images_to}/vk_{ind[0]}.jpg', 'wb') as file:
+                file.write(result.content)
+                print('Image saved.')
+        print(f"Saved {len(images_data)}" ' images')
+    # =====================================
 
-images_count = 3
 
-# VkImageGrabber(image_count=image_count).download_images()
-# VkImageGrabber(image_count=image_count).show_image()
-VkImageGrabber(images_count=images_count).form_thumbnails_list()
+images_count = 10
+# grabbed_images = VkImageGrabber(images_count=images_count)
+grabbed_images = VkImageGrabber(images_count=images_count)
+
+data_list = grabbed_images.get_images_data()
+
+print(data_list)
 
 
 
+# print(grabbed_images.show_image())
+# print(grabbed_images.download_images())
+
+
+#
+# Надо добавить вывод названия гуппы и альбома
 
 
 
