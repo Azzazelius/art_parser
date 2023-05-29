@@ -1,7 +1,6 @@
-
 import vk_api
-
 from parser_main.security_values import access_token  # for security, my token is only accessible from local machine
+import datetime
 
 # authentication info
 vk_session = vk_api.VkApi(token=access_token)  # enter my token
@@ -28,8 +27,7 @@ class VkImageGrabber:
         # print(owner_type)
         return owner_type
 
-
-    def decode_id(self):
+    def decode_id(self):  # получаем id и название объекта
         owner_type = self.owner_type()
         if owner_type == 'group':
             if isinstance(self.screen_id, int):
@@ -39,8 +37,8 @@ class VkImageGrabber:
                 group_info = vk.utils.resolveScreenName(screen_name=self.screen_id)
                 object_id = abs(group_info['object_id'])  # тут надо указывать полученный id
             group_id = vk.groups.getById(group_id=object_id)
-            id_name_result = [group_id[0]['id'], group_id[0]['name']]
-            # print('Group_id = ', id_name_result[0], 'Group_name = ', id_name_result[1], '\n')
+            id_name_result = [group_id[0]['id'] * -1, group_id[0]['name']]  # * -1 - coz group id must be negative
+            # print('decoded. Group_id = ', id_name_result[0], 'Group_name = ', id_name_result[1], '\n')
             return id_name_result
         else:
             if isinstance(self.screen_id, int):  # если это пользоваатель и в адресе число
@@ -50,51 +48,58 @@ class VkImageGrabber:
                 object_id = screen_name['object_id']
             user_first_name = vk.users.get(user_id=self.screen_id)[0]["first_name"]
             user_last_name = vk.users.get(user_id=self.screen_id)[0]["last_name"]
-            id_name_result = list([object_id, (f"{user_first_name}_{user_last_name}")])
-            # print('User_id = ', id_name_result[0], 'User_name = ', id_name_result[1], '\n')
+            id_name_result = list([object_id, f"{user_first_name} {user_last_name}"])
+            # print('decoded. User_id = ', id_name_result[0], 'User_name = ', id_name_result[1], '\n')
         return id_name_result
 
     def grabbing_parameters(self):
-        response = vk.photos.get(owner_id=self.screen_id, album_id=self.album_id, count=self.images_count)
+        obj_id = self.decode_id()[0]
+        response = vk.photos.get(owner_id=obj_id, album_id=self.album_id, count=self.images_count)
         # print('Response: ', response)
         return response
 
+    def get_album_name(self):
+        obj_id = self.decode_id()[0]   #--- !!!! добавить кэширование !!! --- это значение повторяется в разных методах
+        album_info = vk.photos.getAlbums(owner_id=obj_id, album_ids=self.album_id)
+        name = album_info['items'][0]['title']
+        # print('album_name: ', name)
+        return name
+
     def get_images_data(self):
         images_list = self.grabbing_parameters()['items']
+        object_id = self.decode_id()[0]
+        object_name = self.decode_id()[1]
+        object_type = self.owner_type()
+        album_name = self.get_album_name()
+        date = datetime.datetime.fromtimestamp(images_list[0]['date'])  # UNIX-time (POSIX)
+        creation_date = date.strftime('%Y-%m-%d')
         result = []
         for image in images_list:
             result.append(
                     [
                         image['id'],  # picture id
-                        image['owner_id'],  # user / group id
-                        # owner name
+                        object_id,  # owner id
+                        object_type,  # owner_type
+                        object_name,  # owner name
                         image['album_id'],
-                        # album name
-                        image['date'],  # дата в виде UNIX-времени (POSIX-времени)
+                        album_name,  # album name
+                        creation_date,
                         image['sizes'][-1]['url'],  # url to the biggest size is the last one in the dictionary
                         image['sizes'][5]['url'],  # url for thumbnail. In [5] the smallest size
                     ]
                 )
-        print('Images_data: ', result)
-        print('Images data count : ', len(result))
+        # description:
+        # image_id, owner_id, owner_type, owner_name, album_id, album_name, creation_date, big_picture, thumbnail
+
+        # print('get. Images_data: ', result)
+        # print('get. Images data count : ', len(result))
         return result
 
     def __str__(self):
-        return f"group_id = {self.screen_id}, album_id =  {self.album_id}, images_count = {self.images_count}"
+        return f"input data: Screen_name = {self.screen_id}, album_id =" \
+               f"  {self.album_id}, images_count = {self.images_count}"
 
 
-
-
-
-# def album_name(album):  # <====================== Тут получаем название выбранного альбома
-#     album_data = vk.photos.getAlbums(owner_id=album[0], album_ids=owner_album[1])
-#     print('album_data: ', album_data)
-#     name = album_data['items'][0]['title']
-#     print('album_name: ', name)
-#     return name
-
-# owner_album = (-39043966, 157131299)
-# album_name(owner_album)
 
 
 
@@ -105,43 +110,24 @@ class VkImageGrabber:
 
 
 images_count = 2
-# owner_id = "lentach"
+# тест на моей группе
 owner_id = -39043966
-# owner_id = "durov"
-# owner_id = 52373470
 album_id = 157130717
+
+# тест на Ване
+# owner_id = 7689860
+# owner_id = "i_shokhin"
+# album_id = 225552311
+
 grabbed_images = VkImageGrabber(screen_id=owner_id, album_id=album_id, images_count=images_count)
 
-info = grabbed_images.decode_id()
-# info = grabbed_images.decode_test()
-# info = grabbed_images.owner_type()
+# print(grabbed_images)
+print(grabbed_images.get_images_data())
+# grabbed_images.get_album_name()
 
-print(info)
+# info = grabbed_images.decode_id()
+# print(info)
 
-# result = vk.utils.resolveScreenName(screen_name=owner_id)
-# print(result)
-#
-
-
-# images_count = 2
-# owner_id = '52373470'
-# album_id = '123720889'
-# grabbed_images = VkImageGrabber(owner_id=owner_id, album_id=album_id, images_count=images_count)
-#
-# print(grabbed_images.get_images_data())
-
-
-
-
-
-
-# ======================
-# ids = vk.utils.resolveScreenName(screen_name="durov")['object_id']
-# res = vk.users.get(user_id=ids)
-#
-# # print(res)
-# # print('User_id = ', id_name_result[0], 'User_name = ', id_name_result[1], '\n')
-# print(ids, (res[0]["first_name"] + " " + res[0]["last_name"]))
 
 
 
