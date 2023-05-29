@@ -54,7 +54,11 @@ class VkImageGrabber:
 
     def grabbing_parameters(self):
         obj_id = self.decode_id()[0]
-        response = vk.photos.get(owner_id=obj_id, album_id=self.album_id, count=self.images_count)
+
+        if self.images_count > 0:
+            response = vk.photos.get(owner_id=obj_id, album_id=self.album_id, count=self.images_count)
+        else:
+            response = vk.photos.get(owner_id=obj_id, album_id=self.album_id)
         # print('Response: ', response)
         return response
 
@@ -71,10 +75,10 @@ class VkImageGrabber:
         object_name = self.decode_id()[1]
         object_type = self.owner_type()
         album_name = self.get_album_name()
-        date = datetime.datetime.fromtimestamp(images_list[0]['date'])  # UNIX-time (POSIX)
-        creation_date = date.strftime('%Y-%m-%d')
         result = []
         for image in images_list:
+            date = datetime.datetime.fromtimestamp(image['date']) # UNIX-time (POSIX)
+            creation_date = date.strftime('%Y-%m-%d')
             result.append(
                     [
                         image['id'],  # picture id
@@ -109,7 +113,7 @@ class VkImageGrabber:
 # ============================== Testing
 
 
-images_count = 2
+images_count = 0
 # тест на моей группе
 owner_id = -39043966
 album_id = 157130717
@@ -127,7 +131,6 @@ print(grabbed_images.get_images_data())
 
 # info = grabbed_images.decode_id()
 # print(info)
-
 
 
 
