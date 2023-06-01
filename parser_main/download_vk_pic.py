@@ -29,6 +29,7 @@ class VkDownloadImages(VkImageGrabber):
         print(f"Saved {len(images_data)}" ' images')
 
 
+# For testing
 # print(VkDownloadImages.show_image())
 # print(VkDownloadImages.download_images())
 

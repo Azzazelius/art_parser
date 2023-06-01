@@ -30,9 +30,8 @@ class VkImageGrabber:
     def decode_id(self):  # получаем id и название объекта
         owner_type = self.owner_type()
         if owner_type == 'group':
-            if isinstance(self.screen_id, int):
-                object_id = abs(self.screen_id)  # если это группа и в адресе число, то берётся его значение по модулю
-
+            if isinstance(self.screen_id, int):  # если это группа и в url указано число, то берётся значение по модулю
+                object_id = abs(self.screen_id)
             else:  # если в адресе название, то id получаем через resolveScreenName
                 group_info = vk.utils.resolveScreenName(screen_name=self.screen_id)
                 object_id = abs(group_info['object_id'])  # тут надо указывать полученный id
@@ -113,7 +112,7 @@ class VkImageGrabber:
 # ============================== Testing
 
 
-images_count = 0
+images_count = 15
 # тест на моей группе
 owner_id = -39043966
 album_id = 157130717
