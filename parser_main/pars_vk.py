@@ -76,26 +76,22 @@ class VkImageGrabber:
         album_name = self.get_album_name()
         result = []
         for image in images_list:
-            date = datetime.datetime.fromtimestamp(image['date']) # UNIX-time (POSIX)
+            date = datetime.datetime.fromtimestamp(image['date'])  # UNIX-time (POSIX)
             creation_date = date.strftime('%Y-%m-%d')
             result.append(
-                    [
-                        image['id'],  # picture id
-                        object_id,  # owner id
-                        object_type,  # owner_type
-                        object_name,  # owner name
-                        image['album_id'],
-                        album_name,  # album name
-                        creation_date,
-                        image['sizes'][-1]['url'],  # url to the biggest size is the last one in the dictionary
-                        image['sizes'][5]['url'],  # url for thumbnail. In [5] the smallest size
-                    ]
-                )
-        # description:
-        # image_id, owner_id, owner_type, owner_name, album_id, album_name, creation_date, big_picture, thumbnail
+                {
+                    'image_id': image['id'],  # picture id
+                    'owner_id': object_id,  # owner id
+                    'owner_type': object_type,  # owner_type
+                    'owner_name': object_name,  # owner name
+                    'album_id': image['album_id'],
+                    'album_name': album_name,  # album name
+                    'creation_date': creation_date,
+                    'thumbnail': image['sizes'][-1]['url'],  # url to the biggest size is the last one in the dictionary
+                    'big_picture': image['sizes'][5]['url']  # url for thumbnail. In [5] the smallest size
+                }
+            )
 
-        # print('get. Images_data: ', result)
-        # print('get. Images data count : ', len(result))
         return result
 
     def __str__(self):

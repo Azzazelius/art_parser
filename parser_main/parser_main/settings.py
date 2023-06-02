@@ -11,11 +11,13 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-from .security_values import database_password
+# from .security_values import database_password
+# from security_values import database_password
+# from parser_main.parser_main.security_values import database_password
+import security_values
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -38,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'parser_main',
     'art_parser_app',
 ]
 
@@ -80,7 +83,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'art_collector',
         'USER': 'postgres',
-        'PASSWORD': database_password,
+        'PASSWORD': security_values.database_password,
         'HOST': 'localhost',
         'PORT': '5432',
     }
