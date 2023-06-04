@@ -1,0 +1,23 @@
+<!-- Наследуем основную часть страницы с указанного пути
+в этом файле прописываем только содержимое тега body, т.к. для него в layout прописаны Jinja теги
+-->
+{% extends 'testApp/layout.html' %}
+
+<!-- block - часть темплейта, которая берётся из родительского
+ title - указывает, какой именно блок используется-->
+{% block title %} Main page title {% endblock %}
+
+
+
+{% block content %}
+<div class="features">
+    <h1>Index page</h1>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias, aliquam cumque debitis doloremque, ducimus error iure maiores, modi neque quidem quis repellat repellendus voluptate. Ad debitis distinctio libero necessitatibus porro.</p>
+    <button class="btn btn-warning">WARNING</button>
+    <p1>{% include 'testApp/test_include.html' %}</p1>
+
+</div>
+<!-- include позволяет вставить другой темплейт в указанную область  -->
+
+{% endblock %}
+
