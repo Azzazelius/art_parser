@@ -1,8 +1,8 @@
 # Create your tests here.
 
 from django.db.models import Max
-from parser_main.art_parser_app.models import *
-# from parser_main.art_parser_app.models import Owners
+from parser_main.main_vk_app.models import *
+# from parser_main.main_vk_app.models import Owners
 from models import Owners
 
 

@@ -4,18 +4,23 @@
 {% extends 'testApp/layout.html' %}
 
 <!-- block - часть темплейта, которая берётся из родительского
- title - указывает, какой именно блок используется-->
-{% block title %} Main page title {% endblock %}
+ title - указывает, какой именно блок используется
+ {{title_key}} - ссылка на ключ из словаря из views.py,
+ -->
+{% block title %} {{ title_key }} {% endblock %}
 
 
 
 {% block content %}
 <div class="features">
-    <h1>Index page</h1>
+    <h1>{{ title_key }}</h1>
     <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias, aliquam cumque debitis doloremque, ducimus error iure maiores, modi neque quidem quis repellat repellendus voluptate. Ad debitis distinctio libero necessitatibus porro.</p>
     <button class="btn btn-warning">WARNING</button>
     <p1>{% include 'testApp/test_include.html' %}</p1>
 
+    {% for var in values %}
+        <p>{{ var }}</p>
+    {% endfor %}
 </div>
 <!-- include позволяет вставить другой темплейт в указанную область  -->
 

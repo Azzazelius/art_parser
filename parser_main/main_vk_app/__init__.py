@@ -1,1 +1,1 @@
-default_app_config = 'art_parser_app.apps.ArtParserAppConfig'
+default_app_config = 'main_vk_app.apps.ArtParserAppConfig'

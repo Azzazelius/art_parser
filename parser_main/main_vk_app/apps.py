@@ -1,9 +1,9 @@
 from django.apps import AppConfig
 
 
-class ArtParserAppConfig(AppConfig):
+class MainVKAppConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'art_parser_app'
+    name = 'main_vk_app'
     #
     # def ready(self):
     #     from . import pars_vk_test

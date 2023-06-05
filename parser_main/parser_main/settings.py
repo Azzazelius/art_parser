@@ -11,11 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-# from .security_values import database_password
-# from security_values import database_password
-# from parser_main.parser_main.security_values import database_password
-import security_values
+from security_values import database_password
 
+
+database_password = database_password
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -30,7 +29,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,8 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'parser_main',
-    'art_parser_app',
+    'main_vk_app',
+    'testApp',
+    'testNews',
 ]
 
 MIDDLEWARE = [
@@ -83,10 +82,21 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'art_collector',
         'USER': 'postgres',
-        'PASSWORD': security_values.database_password,
+        'PASSWORD': database_password,
+        # 'PASSWORD': security_values.database_password,
+        'HOST': 'localhost',
+        'PORT': '5432',
+    },
+    'second_db': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'database2',
+        'USER': 'postgres',
+        'PASSWORD': database_password,
+        # 'PASSWORD': security_values.database_password,
         'HOST': 'localhost',
         'PORT': '5432',
     }
+
 }
 
 
@@ -130,3 +140,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+STATICFILES_DIRS = [
+    # BASE_DIR / "static"
+    BASE_DIR / "testApp/static"
+    # BASE_DIR / "var/www/static/"  # not used
+]

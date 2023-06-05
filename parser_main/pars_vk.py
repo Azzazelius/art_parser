@@ -1,6 +1,14 @@
 import vk_api
 from parser_main.security_values import access_token  # for security, my token is only accessible from local machine
 import datetime
+# from main_vk_app.models import Owners, Albums, VkImages
+import os
+# Установка переменной окружения DJANGO_SETTINGS_MODULE
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'parser_main.settings')
+
+# Импорт моделей
+from parser_main.main_vk_app import models
+
 
 # authentication info
 vk_session = vk_api.VkApi(token=access_token)  # enter my token
@@ -108,7 +116,7 @@ class VkImageGrabber:
 # ============================== Testing
 
 
-images_count = 15
+images_count = 1
 # тест на моей группе
 owner_id = -39043966
 album_id = 157130717
