@@ -23,38 +23,41 @@ class VkImageGrabber:
         self.album_id = album_id
         self.images_count = images_count
 
+    # Check if owner type is user of group
     def owner_type(self):
-        if isinstance (self.screen_id, int):  # Если в url прописаны цифры, то тип овнера определяем по + / - значению
+        if isinstance (self.screen_id, int):  # If in the url only digits, without letters, then owner type depends on
+            # if value is negative or positive (+ or -)
             if self.screen_id < 0:
                 owner_type = 'group'
             else:
                 owner_type = 'user'
-        else:                    # если значение не числовое, то находим тип методом АПИ
+        else:                    # entered screen name with letters - use VK API  method
             screen_name = vk.utils.resolveScreenName(screen_name=self.screen_id)
             owner_type = screen_name['type']
-        # print(owner_type)
         return owner_type
 
-    def decode_id(self):  # получаем id и название объекта
+    def decode_id(self):  # Based on owner type get ID and name of a user or a group.
         owner_type = self.owner_type()
         if owner_type == 'group':
-            if isinstance(self.screen_id, int):  # если это группа и в url указано число, то берётся значение по модулю
+            if isinstance(self.screen_id, int): # if in screen_name is digit, take the value of the number modulo
                 object_id = abs(self.screen_id)
-            else:  # если в адресе название, то id получаем через resolveScreenName
+            else:  # if not int, get id with method resolveScreenName
                 group_info = vk.utils.resolveScreenName(screen_name=self.screen_id)
-                object_id = abs(group_info['object_id'])  # тут надо указывать полученный id
+                object_id = abs(group_info['object_id'])
             group_id = vk.groups.getById(group_id=object_id)
-            id_name_result = [group_id[0]['id'] * -1, group_id[0]['name']]  # * -1 - coz group id must be negative
+            id_name_result = [group_id[0]['id'] * -1, group_id[0]['name']]  # |* -1| - coz group id must be negative
+            # for test
             # print('decoded. Group_id = ', id_name_result[0], 'Group_name = ', id_name_result[1], '\n')
             return id_name_result
         else:
-            if isinstance(self.screen_id, int):  # если это пользоваатель и в адресе число
+            if isinstance(self.screen_id, int):  # If owner type is user, and screen name = int
                 object_id = abs(self.screen_id)
             else:
+                # use method resolveScreenName to get user's name and surname
                 screen_name = vk.utils.resolveScreenName(screen_name=self.screen_id)
                 object_id = screen_name['object_id']
             user_first_name = vk.users.get(user_id=self.screen_id)[0]["first_name"]
-            user_last_name = vk.users.get(user_id=self.screen_id)[0]["last_name"]
+            user_last_name = vk.users.get(user_id=self.screen_id)[1]["last_name"]
             id_name_result = list([object_id, f"{user_first_name} {user_last_name}"])
             # print('decoded. User_id = ', id_name_result[0], 'User_name = ', id_name_result[1], '\n')
         return id_name_result
@@ -70,7 +73,7 @@ class VkImageGrabber:
         return response
 
     def get_album_name(self):
-        obj_id = self.decode_id()[0]   #--- !!!! добавить кэширование !!! --- это значение повторяется в разных методах
+        obj_id = self.decode_id()[0]   #--- !!!! to do add cache !!! --- this value is used in many methods.
         album_info = vk.photos.getAlbums(owner_id=obj_id, album_ids=self.album_id)
         name = album_info['items'][0]['title']
         # print('album_name: ', name)
@@ -88,18 +91,17 @@ class VkImageGrabber:
             creation_date = date.strftime('%Y-%m-%d')
             result.append(
                 {
-                    'image_id': image['id'],  # picture id
-                    'owner_id': object_id,  # owner id
-                    'owner_type': object_type,  # owner_type
-                    'owner_name': object_name,  # owner name
+                    'image_id': image['id'],
+                    'owner_id': object_id,
+                    'owner_type': object_type,
+                    'owner_name': object_name,
                     'album_id': image['album_id'],
-                    'album_name': album_name,  # album name
+                    'album_name': album_name,
                     'creation_date': creation_date,
-                    'thumbnail': image['sizes'][-1]['url'],  # url to the biggest size is the last one in the dictionary
-                    'big_picture': image['sizes'][5]['url']  # url for thumbnail. In [5] the smallest size
+                    'thumbnail': image['sizes'][-1]['url'],  # url for the biggest size is the last one in the result []
+                    'big_picture': image['sizes'][5]['url']  # url for thumbnail. In [5] is the smallest size
                 }
             )
-
         return result
 
     def __str__(self):
